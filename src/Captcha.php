@@ -58,6 +58,8 @@ class Captcha
     protected $bg = [243, 251, 254];
     //算术验证码
     protected $math = false;
+    //cache存储标识
+    protected $store = 'file';
 
     /**
      * 架构方法 设置参数
@@ -123,7 +125,7 @@ class Captcha
             $key = mb_strtolower($bag, 'UTF-8');
         }
 
-        $this->cache->store('redis')->set($ckey, $key, $this->expire);
+        $this->cache->store($this->store)->set($ckey, $key, $this->expire);
 
         return [
             'value' => $bag,
@@ -140,16 +142,16 @@ class Captcha
      */
     public function check(string $ckey, string $code): bool
     {
-        if (!$this->cache->store('redis')->has($ckey)) {
+        if (!$this->cache->store($this->store)->has($ckey)) {
             return false;
         }
 
-        $key = $this->cache->store('redis')->get($ckey);
+        $key = $this->cache->store($this->store)->get($ckey);
 
         $code = mb_strtolower($code, 'UTF-8');
 
         if ($code == $key) {
-            $this->cache->store('redis')->delete($ckey);
+            $this->cache->store($this->store)->delete($ckey);
             return true;
         }
 
